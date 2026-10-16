@@ -18,6 +18,7 @@ COPY --from=build /app/target/*.jar app.jar
 
 # Render supplies $PORT environment variable dynamically
 ENV PORT=8080
+ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Category {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id", columnDefinition = "int", nullable = false)
     private Integer id;
     @Column(name = "category_name", columnDefinition = "nvarchar(100)", nullable = false)

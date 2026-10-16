@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Device {
     @Id
     @Column(nullable = false, name = "device_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(columnDefinition = "varchar(6)", name = "device_code", nullable = false)
     private  String code;
