@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CICD</title>
+</head>
+
+<body>
+    <h1>Smart Device Management</h1>
+    <from>
+        <label>Device Name: </label>
+        <input type="text" placeholder="Enter device name...">
+        <button type="submit" onclick="alert('The feature will be developed soon')">Search</button>
+    </from>
+
+    <table border="1">
+        <thead>
+            <td>Code</td>
+            <td>Device Name</td>
+            <td>Category</td>
+            <td>Price($)</td>
+            <td>Installation Date</td>
+            <td>Status</td>
+            <td>Action</td>
+        </thead>
+        <tbody>
+            <tr th:if="${devices.size() == 0}">
+                <td colspan="7" style="text-align: center;">No records found</td>
+            </tr>
+
+            <tr th:if="${devices.size() != 0}" th:each="d : ${devices}">
+                <td th:text="${d.getCode()}"></td>
+                <td th:text="${d.getName()}"></td>
+                <td th:text="${d.getCate().getName()}"></td>
+                <td th:text="${d.getPrice()}"></td>
+                <td th:text="${d.getInstallationDate()}" th:format="dd/MM/yyyy"></td>
+                <td th:text="${d.getStatus()}"></td>
+                <td>
+                    <a>View</a> | <a>Delete</a>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</body>
+
+</html>
