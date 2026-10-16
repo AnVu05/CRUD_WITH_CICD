@@ -87,3 +87,13 @@ jobs:
           name: production-build-${{ steps.versioning.outputs.RELEASE_TAG }}
           path: target/*.jar
           retention-days: 30
+
+      - name: Trigger Render Deployment
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Triggering deployment on Render..."
+          curl -sS -X POST "$RENDER_DEPLOY_HOOK_URL"
+          echo "Deployment webhook sent successfully!"
+
