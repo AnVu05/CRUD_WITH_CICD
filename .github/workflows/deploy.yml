@@ -1,0 +1,89 @@
+name: Production Build & Deploy
+
+on:
+  push:
+    branches: [ "production" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    name: Build & Release Production Artifact
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Password123!"
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Password123!' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:sqlserver://localhost:1433;databaseName=master;encrypt=true;trustServerCertificate=true
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: Password123!
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'oracle'
+          cache: maven
+
+      - name: Grant execute permission for Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Run Quality Gate (Unit & Integration Tests)
+        run: ./mvnw clean test
+
+      - name: Build Production JAR
+        run: ./mvnw package -DskipTests
+
+      - name: Generate Release Version
+        id: versioning
+        run: echo "RELEASE_TAG=v1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release & Upload Production JAR
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.RELEASE_TAG }}
+          name: "Production Release ${{ steps.versioning.outputs.RELEASE_TAG }}"
+          body: |
+            ## 🚀 Production Deployment
+            - **Phiên bản:** `${{ steps.versioning.outputs.RELEASE_TAG }}`
+            - **Commit:** `${{ github.sha }}`
+            - **Branch:** `${{ github.ref_name }}`
+            - **Ngày phát hành:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            
+            ### 📦 Thông tin gói triển khai:
+            File `.jar` đã qua kiểm thử tự động, sẵn sàng chạy trên server production:
+            ```bash
+            java -jar CRUD_WITH_CICD-0.0.1-SNAPSHOT.jar
+            ```
+          files: target/*.jar
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Production Artifact to Workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build-${{ steps.versioning.outputs.RELEASE_TAG }}
+          path: target/*.jar
+          retention-days: 30
