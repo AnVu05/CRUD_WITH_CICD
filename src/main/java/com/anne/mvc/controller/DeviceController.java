@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
-@RequestMapping("https://crud-with-cicd.onrender.com/")
+@RequestMapping
 public class DeviceController {
     @Autowired
     DeviceService service;
